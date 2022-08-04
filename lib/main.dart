@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sqlite6_7/connection/database_connection.dart';
+import 'package:sqlite6_7/models/person_model.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,10 +35,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late DataConnection db;
   TextEditingController name_controller = TextEditingController();
   TextEditingController sex_controller = TextEditingController();
   TextEditingController age_controller = TextEditingController();
   File? _image;
+  late Future<List<Person>> listPerson;
   Future getImagefromCamera() async {
     final image = await ImagePicker()
         .pickImage(source: ImageSource.camera, imageQuality: 100);
@@ -51,6 +56,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _image = File(image!.path);
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    db = DataConnection();
+    db.initializeData().whenComplete(() async {
+      setState(() {
+        listPerson = db.getPersonData();
+        print(listPerson.then((value) => value.first.name.toString()));
+      });
     });
   }
 
@@ -118,17 +135,35 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(
               height: 500,
               width: double.infinity,
-              //  color: Colors.red,
-              child: ListView.builder(
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(child: Text(index.toString())),
-                      title: const Text('Hello'),
-                      subtitle: const Text('age : 18'),
-                    ),
-                  );
+              child: FutureBuilder(
+                future: listPerson,
+                builder: (context, AsyncSnapshot<List<Person>> snapshot) {
+                  return snapshot.connectionState == ConnectionState.waiting
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : snapshot.hasError
+                          ? const Center(
+                              child: Icon(
+                                Icons.info,
+                                color: Colors.red,
+                                size: 30,
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                var per = snapshot.data![index];
+                                return Card(
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                        child: Text(per.id.toString())),
+                                    title: Text(per.name),
+                                    subtitle: Text('age : ${per.age}'),
+                                  ),
+                                );
+                              },
+                            );
                 },
               ),
             )
@@ -140,7 +175,13 @@ class _MyHomePageState extends State<MyHomePage> {
         height: 50,
         child: ElevatedButton(
           child: const Center(child: Text('save')),
-          onPressed: () {},
+          onPressed: () async {
+            await DataConnection().insertData(Person(
+                id: Random().nextInt(1000),
+                name: name_controller.text,
+                sex: sex_controller.text,
+                age: int.parse(age_controller.text)));
+          },
         ),
       ),
     );
