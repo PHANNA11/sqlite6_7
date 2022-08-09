@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sqlite6_7/connection/database_connection.dart';
 import 'package:sqlite6_7/models/person_model.dart';
+import 'package:sqlite6_7/update_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -59,11 +60,24 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _onRefresh() async {
+    setState(() {
+      listPerson = getList()
+          .whenComplete(() => Future.delayed(const Duration(seconds: 1)));
+    });
+  }
+
+  Future<List<Person>> getList() async {
+    return await db.getPersonData();
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     db = DataConnection();
+    _onRefresh();
     db.initializeData().whenComplete(() async {
+      // await Future.delayed(Duration(seconds: 3));
       setState(() {
         listPerson = db.getPersonData();
         print(listPerson.then((value) => value.first.name.toString()));
@@ -135,35 +149,56 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(
               height: 500,
               width: double.infinity,
-              child: FutureBuilder(
+              child: FutureBuilder<List<Person>>(
                 future: listPerson,
                 builder: (context, AsyncSnapshot<List<Person>> snapshot) {
-                  return snapshot.connectionState == ConnectionState.waiting
-                      ? const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : snapshot.hasError
-                          ? const Center(
-                              child: Icon(
-                                Icons.info,
-                                color: Colors.red,
-                                size: 30,
-                              ),
-                            )
-                          : ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, index) {
-                                var per = snapshot.data![index];
-                                return Card(
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                        child: Text(per.id.toString())),
-                                    title: Text(per.name),
-                                    subtitle: Text('age : ${per.age}'),
-                                  ),
-                                );
-                              },
-                            );
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.hasError) {
+                    return const Center(
+                      child: Icon(
+                        Icons.info,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    );
+                  } else {
+                    return ListView.builder(
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        var per = snapshot.data![index];
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UpdateData(person: per),
+                                ));
+                          },
+                          child: Card(
+                            child: ListTile(
+                              leading:
+                                  CircleAvatar(child: Text(per.id.toString())),
+                              title: Text(per.name),
+                              subtitle: Text('age : ${per.age}'),
+                              trailing: IconButton(
+                                  onPressed: () async {
+                                    await DataConnection()
+                                        .deletePersonData(per.id)
+                                        .whenComplete(() => _onRefresh());
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  )),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
                 },
               ),
             )
@@ -176,11 +211,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ElevatedButton(
           child: const Center(child: Text('save')),
           onPressed: () async {
-            await DataConnection().insertData(Person(
-                id: Random().nextInt(1000),
-                name: name_controller.text,
-                sex: sex_controller.text,
-                age: int.parse(age_controller.text)));
+            await DataConnection()
+                .insertData(Person(
+                    id: Random().nextInt(1000),
+                    name: name_controller.text,
+                    sex: sex_controller.text,
+                    age: int.parse(age_controller.text)))
+                .whenComplete(() => _onRefresh());
           },
         ),
       ),

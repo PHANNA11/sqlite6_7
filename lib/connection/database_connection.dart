@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
@@ -33,5 +32,16 @@ class DataConnection {
     final db = await initializeData();
     List<Map<String, dynamic>> result = await db.query(table);
     return result.map((e) => Person.fromMap(e)).toList();
+  }
+
+  Future<void> deletePersonData(int id) async {
+    final db = await initializeData();
+    await db.delete(table, where: 'id=?', whereArgs: [id]);
+  }
+
+  Future<void> updatePersonData(Person person) async {
+    final db = await initializeData();
+    await db
+        .update(table, person.toMap(), where: 'id=?', whereArgs: [person.id]);
   }
 }
