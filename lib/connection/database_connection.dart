@@ -17,7 +17,7 @@ class DataConnection {
       version: 1,
       onCreate: (db, version) async {
         await db.execute(
-            'CREATE TABLE $table(id INTEGER PRIMARY KEY, name TEXT,sex TEXT, age  INTEGER)');
+            'CREATE TABLE $table(id INTEGER PRIMARY KEY, name TEXT,sex TEXT, age  INTEGER,image TEXT)');
       },
     );
   }

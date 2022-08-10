@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -36,6 +38,30 @@ class _UpdateDataState extends State<UpdateData> {
         child: Column(
           //mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Stack(
+                children: [
+                  Container(
+                    height: 250,
+                    width: 250,
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(20),
+                      image: widget.person.image == null
+                          ? const DecorationImage(
+                              fit: BoxFit.cover,
+                              image:
+                                  AssetImage('assets/images/def_profile.jpeg'),
+                            )
+                          : DecorationImage(
+                              fit: BoxFit.cover,
+                              image: FileImage(File(widget.person.image))),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
@@ -77,7 +103,8 @@ class _UpdateDataState extends State<UpdateData> {
                     id: widget.person.id,
                     name: name_controller.text,
                     sex: sex_controller.text,
-                    age: int.parse(age_controller.text)))
+                    age: int.parse(age_controller.text),
+                    image: widget.person.image))
                 .whenComplete(() => Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(

@@ -120,6 +120,30 @@ class _MyHomePageState extends State<MyHomePage> {
           //mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
+              padding: const EdgeInsets.all(8),
+              child: Stack(
+                children: [
+                  Container(
+                    height: 250,
+                    width: 250,
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(20),
+                      image: _image == null
+                          ? const DecorationImage(
+                              fit: BoxFit.cover,
+                              image:
+                                  AssetImage('assets/images/def_profile.jpeg'),
+                            )
+                          : DecorationImage(
+                              fit: BoxFit.cover,
+                              image: FileImage(File(_image!.path))),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 controller: name_controller,
@@ -179,8 +203,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                           child: Card(
                             child: ListTile(
-                              leading:
-                                  CircleAvatar(child: Text(per.id.toString())),
+                              leading: CircleAvatar(
+                                backgroundImage: FileImage(File(per.image)),
+                              ),
                               title: Text(per.name),
                               subtitle: Text('age : ${per.age}'),
                               trailing: IconButton(
@@ -216,7 +241,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     id: Random().nextInt(1000),
                     name: name_controller.text,
                     sex: sex_controller.text,
-                    age: int.parse(age_controller.text)))
+                    age: int.parse(age_controller.text),
+                    image: _image!.path))
                 .whenComplete(() => _onRefresh());
           },
         ),
