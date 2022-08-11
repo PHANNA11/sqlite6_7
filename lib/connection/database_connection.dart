@@ -9,6 +9,8 @@ String table = 'person';
 
 class DataConnection {
   Future<Database> initializeData() async {
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
     Directory appDocDir = await getApplicationDocumentsDirectory();
     String appDocPath = appDocDir.path;
     String path = await getDatabasesPath();
@@ -33,6 +35,7 @@ class DataConnection {
     List<Map<String, dynamic>> result = await db.query(table);
     return result.map((e) => Person.fromMap(e)).toList();
   }
+  // Future<Person> getPerObjectList()
 
   Future<void> deletePersonData(int id) async {
     final db = await initializeData();

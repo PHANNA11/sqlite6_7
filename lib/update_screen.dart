@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sqlite6_7/main.dart';
 import 'package:sqlite6_7/models/person_model.dart';
 
@@ -19,6 +20,32 @@ class _UpdateDataState extends State<UpdateData> {
   TextEditingController name_controller = TextEditingController();
   TextEditingController sex_controller = TextEditingController();
   TextEditingController age_controller = TextEditingController();
+  File? _image;
+  late Future<List<Person>> listPerson;
+  Future getImagefromCamera() async {
+    final image = await ImagePicker()
+        .pickImage(source: ImageSource.camera, imageQuality: 100);
+
+    setState(() {
+      _image = File(image!.path);
+    });
+  }
+
+  Future getImagefromGallary() async {
+    final image = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: 100);
+
+    setState(() {
+      _image = File(image!.path);
+    });
+  }
+
+  // Future<void> _onRefresh() async {
+  //   setState(() {
+  //     listPerson = getList()
+  //         .whenComplete(() => Future.delayed(const Duration(seconds: 1)));
+  //   });
+  // }
   @override
   void initState() {
     // TODO: implement initState
@@ -26,6 +53,7 @@ class _UpdateDataState extends State<UpdateData> {
     name_controller.text = widget.person.name;
     sex_controller.text = widget.person.sex;
     age_controller.text = widget.person.age.toString();
+    _image = File(widget.person.image);
   }
 
   @override
@@ -33,6 +61,30 @@ class _UpdateDataState extends State<UpdateData> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Update'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                getImagefromGallary();
+              });
+            },
+            icon: const Icon(Icons.image),
+          ),
+          const SizedBox(
+            width: 30,
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                getImagefromCamera();
+              });
+            },
+            icon: const Icon(Icons.camera_alt),
+          ),
+          const SizedBox(
+            width: 30,
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -56,7 +108,7 @@ class _UpdateDataState extends State<UpdateData> {
                             )
                           : DecorationImage(
                               fit: BoxFit.cover,
-                              image: FileImage(File(widget.person.image))),
+                              image: FileImage(File(_image!.path))),
                     ),
                   ),
                 ],
@@ -104,7 +156,7 @@ class _UpdateDataState extends State<UpdateData> {
                     name: name_controller.text,
                     sex: sex_controller.text,
                     age: int.parse(age_controller.text),
-                    image: widget.person.image))
+                    image: _image == null ? widget.person.image : _image!.path))
                 .whenComplete(() => Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
