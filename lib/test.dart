@@ -9,3 +9,5 @@ class C {
 }
 
 class D {}
+
+class Phanith {}
