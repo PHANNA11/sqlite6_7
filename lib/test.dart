@@ -7,3 +7,5 @@ class C {
 
   C(this.x);
 }
+
+class D {}
