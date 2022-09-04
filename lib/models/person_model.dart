@@ -10,7 +10,7 @@ class Person {
       required this.sex,
       required this.age,
       required this.image});
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> fromJson() {
     return {
       'id': id,
       'name': name,
@@ -20,7 +20,7 @@ class Person {
     };
   }
 
-  Person.fromMap(Map<String, dynamic> res)
+  Person.toJson(Map<String, dynamic> res)
       : id = res['id'],
         name = res['name'],
         sex = res['sex'],

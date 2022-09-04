@@ -26,14 +26,14 @@ class DataConnection {
 
   Future<void> insertData(Person person) async {
     final db = await initializeData();
-    await db.insert(table, person.toMap());
+    await db.insert(table, person.fromJson());
     print('object was insert to database');
   }
 
   Future<List<Person>> getPersonData() async {
     final db = await initializeData();
     List<Map<String, dynamic>> result = await db.query(table);
-    return result.map((e) => Person.fromMap(e)).toList();
+    return result.map((e) => Person.toJson(e)).toList();
   }
   // Future<Person> getPerObjectList()
 
@@ -44,7 +44,7 @@ class DataConnection {
 
   Future<void> updatePersonData(Person person) async {
     final db = await initializeData();
-    await db
-        .update(table, person.toMap(), where: 'id=?', whereArgs: [person.id]);
+    await db.update(table, person.fromJson(),
+        where: 'id=?', whereArgs: [person.id]);
   }
 }
